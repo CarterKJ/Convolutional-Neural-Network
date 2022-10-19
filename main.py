@@ -5,7 +5,7 @@ class CNN:
     def __init__(self, input_matrix):
         # goal: input(9x9x1) -> kernel(3x3x1) -> pool(2x2x1) -> kernel(3x3x1) -> flattened -> activation(tanh) -> neuron -> output -> softmax
         self.input = input_matrix
-        self.layer = input_matrix
+        self.layers = [input_matrix.tolist()]
         self.kernels = []  # valid
         self.event_list = []
 
@@ -13,29 +13,38 @@ class CNN:
         self.event_list.append(f"pool:{shape}")
         return
 
-    def add_kernel(self, shape, max_size: int = 2):
+    def add_kernel(self, amount, shape, max_size: int = 2):
         self.event_list.append(f"kernel:{shape}")
-        self.spawn_kernel(shape, max_size)
+        self.spawn_kernel(amount,shape, max_size)
         return
 
-    def spawn_kernel(self, shape, max_size):
-        kernel = np.random.randint(max_size, size=(shape[0], shape[1]))
-        self.kernels.append(kernel.tolist())
+    def spawn_kernel(self,amount, shape, max_size, ):
+        local_kernels=[]
+        for val in range(amount):
+            kernel = np.random.randint(max_size, size=(shape[0], shape[1]))
+            local_kernels.append(kernel.tolist())
+        self.kernels.append(local_kernels)
         return
 
 
     def forward(self):
+        # kernal [layer] [num/chidren] [matrix] [1d]
         kernel_layer = 0
         for event in self.event_list:
-            event = event.split(":")
-            if event[0] == "kernel":
-                self.layer = self.compute_layer([len(self.layer[0]), len(self.layer)], eval(event[1]), self.layer, self.kernels[kernel_layer])
-                kernel_layer += 1
-            elif event[0] == "pool":
-                self.layer = self.pool(eval(event[1]),[len(self.layer[0]), len(self.layer)], self.layer)
-            else:
-                print("Something went wrong, nice code dummy")
-        return self.layer
+            for cur_layer in self.layers:
+                event = event.split(":")
+                if event[0] == "kernel":
+                    for val in range(len(self.kernels[kernel_layer])): #left off
+                        cur_layer = self.compute_layer([len(cur_layer[0]), cur_layer], eval(event[1]), cur_layer, self.kernels[kernel_layer][val])
+                        self.layers.append(cur_layer)
+
+                    kernel_layer += 1
+                elif event[0] == "pool":
+                    cur_layer = self.pool(eval(event[1]), [len(self.layers[0]), len(self.layers)], self.layers)
+                    self.layers.append(cur_layer)
+                else:
+                    print("Something went wrong, nice code dummy")
+            return self.layers
 
     def compute_layer(self, layer_shape, kernel_shape, layer, kernel):
         # 2d valid
