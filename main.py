@@ -28,6 +28,36 @@ class CNN:
         return output
 
 
+    def pool(self,pool_shape,layer_shape,layer):
+        #max pooling
+        output = []
+        for y_pos in range(layer_shape[1] - pool_shape[1] + 1):
+            # scoots down the matrix
+            output_row = []
+            for x_pos in range(layer_shape[0] - pool_shape[0] + 1):
+                # scoots across the matrix
+                local_max = []
+                for matrix_y_level in range(pool_shape[1]):
+                    local_max.append(max(layer[matrix_y_level + y_pos][x_pos: x_pos + matrix_y_level]))
+                output_row.append(max(local_max))
+            output.append(output_row)
+        return output
+
+
+
+
+
+
+
+
+    def softmax(self, output):
+
+        return np.exp(output) / np.sum(np.exp(output), axis=0)
+
+    def activation(self, neuron):
+        #tanh activation
+        return np.tanh(neuron)
+
 
 
 
