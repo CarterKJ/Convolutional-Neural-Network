@@ -28,23 +28,31 @@ class CNN:
 
 
     def forward(self):
-        # kernal [layer] [num/chidren] [matrix] [1d]
+        # kernal [layer] [num/chidren] [matrix] [1d list]
+        # layer [[[]],[[],[],[]],[[],[],[],[],[],[]]]
+        # layer [iteration] [child layer] [matrix] [1d list]
+        # TODO: loop runs 3 times when items in event, self.layers[-1] fix, pooling(should be easy if not no work), bies
+        iteration_stack = [self.layers]
         kernel_layer = 0
         for event in self.event_list:
+            event_name = event.split(":")
             for cur_layer in self.layers:
-                event = event.split(":")
-                if event[0] == "kernel":
-                    for val in range(len(self.kernels[kernel_layer])): #left off
-                        cur_layer = self.compute_layer([len(cur_layer[0]), cur_layer], eval(event[1]), cur_layer, self.kernels[kernel_layer][val])
-                        self.layers.append(cur_layer)
+                print(1)
+                if event_name[0] == "kernel":
 
-                    kernel_layer += 1
-                elif event[0] == "pool":
+                    for val in range(len(self.kernels[kernel_layer])): #left off
+                        compound_layer = self.compute_layer([len(cur_layer[0]), len(cur_layer)], eval(event_name[1]), cur_layer, self.kernels[kernel_layer][val])
+                        iteration_stack.append(compound_layer)
+                    # kernel_layer += 1
+
+                elif event_name[0] == "pool":
                     cur_layer = self.pool(eval(event[1]), [len(self.layers[0]), len(self.layers)], self.layers)
                     self.layers.append(cur_layer)
                 else:
                     print("Something went wrong, nice code dummy")
-            return self.layers
+            self.layers.append(iteration_stack)
+        return self.layers
+
 
     def compute_layer(self, layer_shape, kernel_shape, layer, kernel):
         # 2d valid
@@ -103,7 +111,7 @@ class NeuralNetwork:
         output = []
         self.neurons = []
         self.neurons.append(inputs)
-        for layer_pos in range(len(self.network_layers) - 1):  # good
+        for layer_pos in range(len(self.network_layers) - 1):  # good?
             neuron_layer = []
             weight_layer_pos = self.weights[layer_pos]
             for neuron_pos in range(self.network_layers[layer_pos + 1]):
@@ -120,3 +128,9 @@ class NeuralNetwork:
     def activation(self, neuron):
         # tanh activation
         return np.tanh(neuron)
+
+# debug stuff
+layer = np.random.randint(4, size=(9, 9))
+cnn = CNN(layer)
+cnn.add_kernel(3,[2,2])
+print(cnn.forward())
