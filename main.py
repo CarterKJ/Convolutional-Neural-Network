@@ -9,6 +9,7 @@ class CNN:
         self.kernels = []  # valid
         self.event_list = []
 
+
     def add_pool(self, shape):
         self.event_list.append(f"pool:{shape}")
         return
@@ -91,7 +92,11 @@ class CNN:
     def flatten(self, layer):
         output = []
         # truns matrix into single list to pass to a neural network
-        for val in layer: output += val
+        semi_flat_1 = [item for sublist in layer for item in sublist]
+        semi_flat_2 = [item for sublist in semi_flat_1 for item in sublist]
+        output = [item for sublist in semi_flat_2 for item in sublist]
+
+
         return output
 
 
@@ -133,4 +138,8 @@ class NeuralNetwork:
 layer = np.random.randint(4, size=(9, 9))
 cnn = CNN(layer)
 cnn.add_kernel(10,[2,2], max_size=5)
-cnn.forward()
+cnn.add_pool([2,2])
+cnn.add_kernel(3,[2,2])
+cn_out = cnn.flatten(cnn.forward())
+nn = NeuralNetwork([len(cn_out), 50, 20])
+print(nn.forward(cn_out))
