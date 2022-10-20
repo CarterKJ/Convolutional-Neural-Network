@@ -5,7 +5,7 @@ class CNN:
     def __init__(self, input_matrix):
         # goal: input(9x9x1) -> kernel(3x3x1) -> pool(2x2x1) -> kernel(3x3x1) -> flattened -> activation(tanh) -> neuron -> output -> softmax
         self.input = input_matrix
-        self.layers = [input_matrix.tolist()]
+        self.layers = [[input_matrix.tolist()]]
         self.kernels = []  # valid
         self.event_list = []
 
@@ -31,23 +31,23 @@ class CNN:
         # kernal [layer] [num/chidren] [matrix] [1d list]
         # layer [[[]],[[],[],[]],[[],[],[],[],[],[]]]
         # layer [iteration] [child layer] [matrix] [1d list]
-        # TODO: loop runs 3 times when items in event, self.layers[-1] fix, pooling(should be easy if not no work), bies
-        iteration_stack = [self.layers]
-        kernel_layer = 0
+        iteration_stack = []
+        kernel_layer = -1
         for event in self.event_list:
             event_name = event.split(":")
-            for cur_layer in self.layers:
-                print(1)
+            if event_name[0] == "kernel":
+                kernel_layer += 1
+            iteration_stack = []
+            for cur_layer in self.layers[-1]:
                 if event_name[0] == "kernel":
-
                     for val in range(len(self.kernels[kernel_layer])): #left off
+                        # for matrix in cur_layer:
                         compound_layer = self.compute_layer([len(cur_layer[0]), len(cur_layer)], eval(event_name[1]), cur_layer, self.kernels[kernel_layer][val])
                         iteration_stack.append(compound_layer)
-                    # kernel_layer += 1
-
                 elif event_name[0] == "pool":
-                    cur_layer = self.pool(eval(event[1]), [len(self.layers[0]), len(self.layers)], self.layers)
-                    self.layers.append(cur_layer)
+                    pool_layer = self.pool(eval(event_name[1]), [len(cur_layer[0]), len(cur_layer)], cur_layer)
+                    # debug.append(matrix)
+                    iteration_stack.append(pool_layer)
                 else:
                     print("Something went wrong, nice code dummy")
             self.layers.append(iteration_stack)
@@ -132,5 +132,5 @@ class NeuralNetwork:
 # debug stuff
 layer = np.random.randint(4, size=(9, 9))
 cnn = CNN(layer)
-cnn.add_kernel(3,[2,2])
-print(cnn.forward())
+cnn.add_kernel(10,[2,2], max_size=5)
+cnn.forward()
