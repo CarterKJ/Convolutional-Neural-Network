@@ -2,10 +2,10 @@ import numpy as np
 
 
 class CNN:
-    def __init__(self, input_matrix):
+    def __init__(self, *input_matrix):
         # goal: input(9x9x1) -> kernel(3x3x1) -> pool(2x2x1) -> kernel(3x3x1) -> flattened -> activation(tanh) -> neuron -> output -> softmax
-        self.input = input_matrix
-        self.layers = [[input_matrix.tolist()]]
+        input = list(input_matrix)
+        self.layers = [list(input_matrix)]
         self.kernels = []  # valid
         self.event_list = []
 
@@ -41,13 +41,11 @@ class CNN:
             iteration_stack = []
             for cur_layer in self.layers[-1]:
                 if event_name[0] == "kernel":
-                    for val in range(len(self.kernels[kernel_layer])): #left off
-                        # for matrix in cur_layer:
+                    for val in range(len(self.kernels[kernel_layer])): #picked up
                         compound_layer = self.compute_layer([len(cur_layer[0]), len(cur_layer)], eval(event_name[1]), cur_layer, self.kernels[kernel_layer][val])
                         iteration_stack.append(compound_layer)
                 elif event_name[0] == "pool":
                     pool_layer = self.pool(eval(event_name[1]), [len(cur_layer[0]), len(cur_layer)], cur_layer)
-                    # debug.append(matrix)
                     iteration_stack.append(pool_layer)
                 else:
                     print("Something went wrong, nice code dummy")
@@ -136,7 +134,8 @@ class NeuralNetwork:
 
 # debug stuff
 layer = np.random.randint(4, size=(9, 9))
-cnn = CNN(layer)
+layer1 = np.random.randint(4, size=(9, 9))
+cnn = CNN(layer.tolist(), layer1.tolist())
 cnn.add_kernel(10,[2,2], max_size=5)
 cnn.add_pool([2,2])
 cnn.add_kernel(3,[2,2])
